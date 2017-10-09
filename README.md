@@ -1,6 +1,6 @@
 # ReachDeploy
 
-**TODO: Add description**
+This tool is intended to ease the deploy process to Docker Swarm clusters for applications using Elixir on Reach. 
 
 ## Installation
 
