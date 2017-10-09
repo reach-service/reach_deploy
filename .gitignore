@@ -20,3 +20,5 @@ erl_crash.dump
 *.ez
 .dockerignore
 Dockerfile.build
+rel/
+docker-compose.yml
