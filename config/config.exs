@@ -20,6 +20,8 @@ use Mix.Config
 #
 #     config :logger, level: :info
 #
+config :reach_deploy,
+  tag: "#{Mix.env}_{rel-version}-{git-branch}-{git-sha}"
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
