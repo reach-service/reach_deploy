@@ -19,29 +19,34 @@ defmodule ReachDeploy do
       mix deploy
   """
   def deploy(args) do
-    # file = Application.get_env(:reach_deploy, :docker_compose_file,
-    # "docker-compose.yml")
+
+    env = task_env(args)
 
     # Copy .dockerignore if not exists
     unless File.exists?(".dockerignore") do
       File.cp(Path.join(@dockerignore, "dockerignore"), ".dockerignore")
     end
 
-    # Builds the image
-    Mix.shell.info "Building the image..."
-    Mix.Task.run("docker.build")
+    unless File.exists?(Path.join(["rel", "config.exs"])) do
+      Mix.shell.info "Initial config file not found, creating it..."
+      Mix.Task.run("docker.init")
+    end
 
-    # Releases a new version
-    Mix.shell.info "Releasing a new version..."
-    Mix.Task.run("docker.release")
+    # # Builds the image
+    # Mix.shell.info "Building the image..."
+    # Mix.Task.run("docker.build")
 
-    # Ships to Docker Hub
-    Mix.shell.info "Publishing image on Docker Hub..."
-    Mix.Task.run("docker.publish", args)
+    # # Releases a new version
+    # Mix.shell.info "Releasing a new version..."
+    # Mix.Task.run("docker.release")
+
+    # # Ships to Docker Hub
+    # Mix.shell.info "Publishing image on Docker Hub..."
+    # Mix.Task.run("docker.publish", args)
 
     # Creates a docker compose file
-    unless File.exists?("docker-compose.template.yml") do
-      Mix.shell.info "No `docker-compose.template.yml` file found. Aborting."
+    unless File.exists?("docker-compose.template." <> env <> ".yml") || File.exists?("docker-compose.template.yml") do
+      Mix.shell.info "No Docker Compose template file found. Aborting."
       System.halt(0)
     end
 
@@ -57,6 +62,17 @@ defmodule ReachDeploy do
         Mix.shell.warn "Could not create/update `docker-compose.yml`. Aborting."
         System.halt(0)
       end
+    end
+
+    Mix.shell.info "Deploying app to #{env} environment..."
+    System.cmd("deploy", ["run", env])
+  end
+
+  defp task_env(args) do
+    if Enum.member?(args, "--cd") do
+      "cd"
+    else
+      "prod"
     end
   end
 
@@ -83,7 +99,7 @@ defmodule ReachDeploy do
 
   defp make_image_tag(tag) do
     template = tag ||
-      Application.get_env(:mix_docker, :tag) ||
+      Application.get_env(:reach_deploy, :tag) ||
       @default_tag_template
     Regex.replace(~r/\{([a-z0-9-]+)\}/, template, fn _, x -> tagvar(x) end)
   end
@@ -130,9 +146,6 @@ defmodule ReachDeploy do
     rel.version
   end
 
-  # TODO: Run Mix Docker build/release
-  # TODO: Create new docker-compose file based on configs from deploy.conf
-  # TODO: Run Mix publish
   # TODO: Deploy app to cluster
   # TODO: Do cleanups
 

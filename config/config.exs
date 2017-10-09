@@ -21,7 +21,12 @@ use Mix.Config
 #     config :logger, level: :info
 #
 config :reach_deploy,
-  tag: "#{Mix.env}_{rel-version}-{git-branch}-{git-sha}"
+  tag: "{rel-version}-{git-branch}-{git-sha}",
+  image: "reach/reach_deploy"
+
+# Removes warns for missing Distillery. Inception. o.O
+config :distillery,
+  no_warn_missing: [:distillery]
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
