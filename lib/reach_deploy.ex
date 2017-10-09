@@ -13,7 +13,7 @@ defmodule ReachDeploy do
   Deploys the application to Swarm Cloud.
 
   ## Usage
-      iex> mix deploy
+      mix deploy
   """
   def deploy(_args) do
     # file = Application.get_env(:reach_deploy, :docker_compose_file,
