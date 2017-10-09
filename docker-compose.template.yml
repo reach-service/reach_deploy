@@ -1,1 +1,31 @@
-file: {image}
+version: "3.2"
+services:
+  deploy_test:
+    image: {image}
+    deploy:
+      replicas: 1
+      labels:
+        - com.df.notify=true
+        - com.df.distribute=true
+        - com.df.servicePath=/
+        - com.df.serviceDomain=deploy_test.rea.ch
+        - com.df.port=8234
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker
+    ports:
+      - "8234:8234"
+    networks:
+      - cluster_network
+    environment:
+      PORT: 8234
+      HOST: deploy_test
+      SECRET_KEY_BASE: "vlUoVCPNc4NaQISjN9IzK81ivdvpy53P9yaomOKv"
+    command: foreground
+
+networks:
+  cluster_network:
+    external:
+      name: cluster_network

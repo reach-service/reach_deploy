@@ -21,6 +21,7 @@ defmodule ReachDeploy do
   def deploy(args) do
 
     env = task_env(args)
+    stack_name = Application.get_env(:reach_deploy, :stack_name)
 
     # Copy .dockerignore if not exists
     unless File.exists?(".dockerignore") do
@@ -32,21 +33,21 @@ defmodule ReachDeploy do
       Mix.Task.run("docker.init")
     end
 
-    # # Builds the image
-    # Mix.shell.info "Building the image..."
-    # Mix.Task.run("docker.build")
+    # Builds the image
+    Mix.shell.info "Building the image..."
+    Mix.Task.run("docker.build")
 
-    # # Releases a new version
-    # Mix.shell.info "Releasing a new version..."
-    # Mix.Task.run("docker.release")
+    # Releases a new version
+    Mix.shell.info "Releasing a new version..."
+    Mix.Task.run("docker.release")
 
-    # # Ships to Docker Hub
-    # Mix.shell.info "Publishing image on Docker Hub..."
-    # Mix.Task.run("docker.publish", args)
+    # Ships to Docker Hub
+    Mix.shell.info "Publishing image on Docker Hub..."
+    Mix.Task.run("docker.publish", args)
 
     # Creates a docker compose file
     unless File.exists?("docker-compose.template." <> env <> ".yml") || File.exists?("docker-compose.template.yml") do
-      Mix.shell.info "No Docker Compose template file found. Aborting."
+      Logger.error "No Docker Compose template file found. Aborting."
       System.halt(0)
     end
 
@@ -57,19 +58,66 @@ defmodule ReachDeploy do
         tag_replace(s)
       end)
 
+      # Dummy file
+      unless File.exists? "docker-compose-#{stack_name}.yml" do
+        :ok = File.write "docker-compose-#{stack_name}.yml", ""
+      end
+
       # Does the file write went ok?
-      unless :ok === File.write "docker-compose.yml", contents do
-        Mix.shell.warn "Could not create/update `docker-compose.yml`. Aborting."
+      unless :ok === File.write "docker-compose.override.#{env}.yml", contents do
+        Logger.error "Could not create/update `docker-compose.override.#{env}.yml`. Aborting."
         System.halt(0)
       end
     end
 
+    Mix.shell.info "Creating a brand new `deploy.conf` file based on configs..."
+    create_deploy_config()
+
     Mix.shell.info "Deploying app to #{env} environment..."
-    System.cmd("deploy", ["run", env])
+    # TODO: Create a :ports communication from processes to receive output
+    System.cmd("deploy", [env, "run"])
+  end
+
+  defp create_deploy_config() do
+    contents = """
+    [prod]
+    user #{get_deploy_conf(:prod, :user)}
+    host #{get_deploy_conf(:prod, :host)}
+    compose_file docker-compose-#{get_stack_name()}.yml
+    stack_name #{get_stack_name()}
+    
+    [cd]
+    user #{get_deploy_conf(:cd, :user)}
+    host #{get_deploy_conf(:cd, :host)}
+    compose_file docker-compose-#{get_stack_name()}.yml
+    stack_name #{get_stack_name()}
+    """
+
+    :ok = File.write "deploy.conf", contents
+  end
+
+  defp get_deploy_conf(environment, key) do
+    deploy_conf = Application.get_env(:reach_deploy, :deploy_conf)
+    case deploy_conf[environment][key] do
+      nil ->
+        raise "Config not set: {:deploy_conf, #{inspect environment}, #{inspect key}}"
+      conf ->
+        conf
+    end
+  end
+
+  defp get_stack_name() do
+    case Application.get_env(:reach_deploy, :stack_name) do
+      nil ->
+        raise "Config not set: :stack_name"
+      conf ->
+        conf
+    end
   end
 
   defp task_env(args) do
-    if Enum.member?(args, "--cd") do
+    {opts, _, _} = OptionParser.parse(args)
+    if opts[:cd] do
       "cd"
     else
       "prod"
@@ -93,13 +141,13 @@ defmodule ReachDeploy do
   end
 
   defp image_name do
-    Application.get_env(:reach_deploy, :image) ||
+    Application.get_env(:mix_docker, :image) ||
       to_string(app_name())
   end
 
   defp make_image_tag(tag) do
     template = tag ||
-      Application.get_env(:reach_deploy, :tag) ||
+      Application.get_env(:mix_docker, :tag) ||
       @default_tag_template
     Regex.replace(~r/\{([a-z0-9-]+)\}/, template, fn _, x -> tagvar(x) end)
   end
@@ -148,5 +196,4 @@ defmodule ReachDeploy do
 
   # TODO: Deploy app to cluster
   # TODO: Do cleanups
-
 end

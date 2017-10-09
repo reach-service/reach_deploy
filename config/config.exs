@@ -21,8 +21,21 @@ use Mix.Config
 #     config :logger, level: :info
 #
 config :reach_deploy,
-  tag: "{rel-version}-{git-branch}-{git-sha}",
-  image: "reach/reach_deploy"
+  stack_name: "deploy_test",
+  deploy_conf: %{
+    prod: %{
+      user: "ubuntu",
+      host: "34.234.135.157"
+    },
+    cd: %{
+      user: "ubuntu",
+      host: "34.236.72.71"
+    }
+  }
+  
+config :mix_docker,
+  image: "reach/reach_deploy",
+  tag: "{rel-version}-{git-branch}-{git-sha}"
 
 # Removes warns for missing Distillery. Inception. o.O
 config :distillery,
