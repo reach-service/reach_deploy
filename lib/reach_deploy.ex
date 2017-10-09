@@ -51,11 +51,11 @@ defmodule ReachDeploy do
     end
   end
 
-  def tag_replace("image") do
+  defp tag_replace("image") do
     "docker-compose.yml"
   end
 
-  def tag_replace(any) do
+  defp tag_replace(any) do
     Logger.warn("Tag not defined: #{any}")
     any
   end
