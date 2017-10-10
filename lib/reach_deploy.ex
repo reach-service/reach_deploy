@@ -81,31 +81,23 @@ defmodule ReachDeploy do
   end
 
   defp create_deploy_config() do
-    contents = """
-    [prod]
-    user #{get_deploy_conf(:prod, :user)}
-    host #{get_deploy_conf(:prod, :host)}
-    compose_file docker-compose-#{get_stack_name()}.yml
-    stack_name #{get_stack_name()}
-    
-    [cd]
-    user #{get_deploy_conf(:cd, :user)}
-    host #{get_deploy_conf(:cd, :host)}
-    compose_file docker-compose-#{get_stack_name()}.yml
-    stack_name #{get_stack_name()}
-    """
+    contents =
+    for {key, value} <- Application.get_env(:reach_deploy, :deploy_conf) do
+      """
+      [#{key}]
+      user #{value[:user]}
+      host #{value[:host]}
+      compose_file docker-compose-#{get_stack_name()}.yml
+      stack_name #{get_stack_name()}
+
+      """
+    end
+
+    contents = contents
+    |> to_string
+    |> String.trim
 
     :ok = File.write "deploy.conf", contents
-  end
-
-  defp get_deploy_conf(environment, key) do
-    deploy_conf = Application.get_env(:reach_deploy, :deploy_conf)
-    case deploy_conf[environment][key] do
-      nil ->
-        raise "Config not set: {:deploy_conf, #{inspect environment}, #{inspect key}}"
-      conf ->
-        conf
-    end
   end
 
   defp get_stack_name() do
