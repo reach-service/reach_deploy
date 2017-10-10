@@ -33,17 +33,17 @@ defmodule ReachDeploy do
       Mix.Task.run("docker.init")
     end
 
-    # Builds the image
-    Mix.shell.info "Building the image..."
-    Mix.Task.run("docker.build")
+    # # Builds the image
+    # Mix.shell.info "Building the image..."
+    # Mix.Task.run("docker.build")
 
-    # Releases a new version
-    Mix.shell.info "Releasing a new version..."
-    Mix.Task.run("docker.release")
+    # # Releases a new version
+    # Mix.shell.info "Releasing a new version..."
+    # Mix.Task.run("docker.release")
 
-    # Ships to Docker Hub
-    Mix.shell.info "Publishing image on Docker Hub..."
-    Mix.Task.run("docker.publish", args)
+    # # Ships to Docker Hub
+    # Mix.shell.info "Publishing image on Docker Hub..."
+    # Mix.Task.run("docker.publish", args)
 
     # Creates a docker compose file
     unless File.exists?("docker-compose.template." <> env <> ".yml") || File.exists?("docker-compose.template.yml") do
@@ -60,7 +60,10 @@ defmodule ReachDeploy do
 
       # Dummy file
       unless File.exists? "docker-compose-#{stack_name}.yml" do
-        :ok = File.write "docker-compose-#{stack_name}.yml", ""
+        :ok = File.write "docker-compose-#{stack_name}.yml",
+        """
+        version: "3.2"
+        """
       end
 
       # Does the file write went ok?
@@ -74,8 +77,7 @@ defmodule ReachDeploy do
     create_deploy_config()
 
     Mix.shell.info "Deploying app to #{env} environment..."
-    # TODO: Create a :ports communication from processes to receive output
-    System.cmd("deploy", [env, "run"])
+    System.cmd("deploy", [env, "-n", "run"])
   end
 
   defp create_deploy_config() do
