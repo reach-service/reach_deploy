@@ -47,16 +47,24 @@ defmodule ReachDeploy do
     Mix.shell.info "Publishing image on Docker Hub..."
     Mix.Task.run("docker.publish", args)
 
-    # Creates a docker compose file
-    unless File.exists?("docker-compose.template." <> env <> ".yml") ||
-      File.exists?("docker-compose.template.yml") do
-        Mix.shell.error "No `docker-compose.template.yml` or `docker-compose.template.[env].yml` file found. Aborting."
+
+    # Which template file to choose from?
+    template_file = cond do
+      File.exists?("docker-compose.template." <> env <> ".yml")  ->
+        "docker-compose.template." <> env <> ".yml"
+      File.exists?("docker-compose.template.yml")  ->
+        "docker-compose.template.yml"
+      true ->
+        Mix.shell.error "No `docker-compose.template.yml` or `docker-compose.template.#{env}.yml` file found. Aborting."
         System.halt(0)
+        nil
     end
 
+    # Creates a docker compose file
     Mix.shell.info "Generating a Docker Compose file based on template..."
+
     # Reads the file and generate a new one based on template
-    with {:ok, file} <- File.read("docker-compose.template.yml") do
+    with {:ok, file} <- File.read(template_file) do
       contents = Regex.replace(~r/\{([a-zA-Z0-9]+)\}/, file, fn _, s ->
         tag_replace(s)
       end)
