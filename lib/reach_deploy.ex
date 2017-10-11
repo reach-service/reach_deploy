@@ -50,7 +50,8 @@ defmodule ReachDeploy do
     # Creates a docker compose file
     unless File.exists?("docker-compose.template." <> env <> ".yml") ||
       File.exists?("docker-compose.template.yml") do
-        raise "No Docker Compose template file found. Aborting."
+        Mix.shell.error "No Docker Compose template file found. Aborting."
+        System.halt(0)
     end
 
     Mix.shell.info "Generating a Docker Compose file based on template..."
@@ -70,7 +71,7 @@ defmodule ReachDeploy do
 
       # Does the file write went ok?
       unless :ok === File.write "docker-compose.override.#{env}.yml", contents do
-        raise "Could not create/update `docker-compose.override.#{env}.yml`. Aborting."
+        Mix.shell.error "Could not create/update `docker-compose.override.#{env}.yml`. Aborting."
         System.halt(0)
       end
     end
@@ -105,7 +106,8 @@ defmodule ReachDeploy do
   defp get_stack_name() do
     case Application.get_env(:reach_deploy, :stack_name) do
       nil ->
-        raise "Config not set: :stack_name"
+        Mix.shell.error "Config not set: :stack_name"
+        System.halt(0)
       conf ->
         conf
     end
