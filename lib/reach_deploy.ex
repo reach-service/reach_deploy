@@ -25,6 +25,7 @@ defmodule ReachDeploy do
 
     # Copy .dockerignore if not exists
     unless File.exists?(".dockerignore") do
+      Mix.shell.info ".dockerignore not found, creating it..."
       File.cp(Path.join(@dockerignore, "dockerignore"), ".dockerignore")
     end
 
@@ -44,8 +45,6 @@ defmodule ReachDeploy do
     # # Ships to Docker Hub
     # Mix.shell.info "Publishing image on Docker Hub..."
     # Mix.Task.run("docker.publish", args)
-
-    Mix.shell.info("Here, debugging...")
 
     # Creates a docker compose file
     unless File.exists?("docker-compose.template." <> env <> ".yml") ||
