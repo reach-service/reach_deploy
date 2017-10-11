@@ -21,6 +21,7 @@ erl_crash.dump
 .dockerignore
 Dockerfile.build
 rel/
+docker-compose.yml
 docker-compose*.yml
 deploy.conf
 *.tar.gz
