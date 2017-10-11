@@ -50,7 +50,7 @@ defmodule ReachDeploy do
     # Creates a docker compose file
     unless File.exists?("docker-compose.template." <> env <> ".yml") ||
       File.exists?("docker-compose.template.yml") do
-        Mix.shell.error "No Docker Compose template file found. Aborting."
+        Mix.shell.error "No `docker-compose.template.yml` or `docker-compose.template.[env].yml` file found. Aborting."
         System.halt(0)
     end
 
