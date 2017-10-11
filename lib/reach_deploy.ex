@@ -46,9 +46,10 @@ defmodule ReachDeploy do
     Mix.Task.run("docker.publish", args)
 
     # Creates a docker compose file
-    unless File.exists?("docker-compose.template." <> env <> ".yml") || File.exists?("docker-compose.template.yml") do
-      Logger.error "No Docker Compose template file found. Aborting."
-      System.halt(0)
+    unless File.exists?("docker-compose.template." <> env <> ".yml") ||
+      File.exists?("docker-compose.template.yml") do
+        Logger.error "No Docker Compose template file found. Aborting."
+        System.halt(0)
     end
 
     Mix.shell.info "Generating a Docker Compose file based on template..."
