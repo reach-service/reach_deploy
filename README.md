@@ -51,10 +51,10 @@ config :mix_docker,
   tag: "{rel-version}-{git-sha}-{git-branch}"
 ```
 
-After configuring the package, do a `mix reach.deploy` to deploy to `prod` server on default. To deploy to another server, pass its name to `-s` option, as follows:
+After configuring the package, do a `mix reach.deploy` to deploy to `prod` server on default. To deploy to another server, pass its name to `--server` option, as follows:
 
 ```elixir
-mix reach.deploy -s staging
+mix reach.deploy --server staging
 ```
 
 ... where `staging` is a existent entry on `:deploy_conf` config.
