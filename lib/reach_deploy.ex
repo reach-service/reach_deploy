@@ -33,17 +33,17 @@ defmodule ReachDeploy do
       Mix.Task.run("docker.init")
     end
 
-    # # Builds the image
-    # Mix.shell.info "Building the image..."
-    # Mix.Task.run("docker.build")
+    # Builds the image
+    Mix.shell.info "Building the image..."
+    Mix.Task.run("docker.build")
 
-    # # Releases a new version
-    # Mix.shell.info "Releasing a new version..."
-    # Mix.Task.run("docker.release")
+    # Releases a new version
+    Mix.shell.info "Releasing a new version..."
+    Mix.Task.run("docker.release")
 
-    # # Ships to Docker Hub
-    # Mix.shell.info "Publishing image on Docker Hub..."
-    # Mix.Task.run("docker.publish", args)
+    # Ships to Docker Hub
+    Mix.shell.info "Publishing image on Docker Hub..."
+    Mix.Task.run("docker.publish", args)
 
     # Creates a docker compose file
     unless File.exists?("docker-compose.template." <> env <> ".yml") ||
