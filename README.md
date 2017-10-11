@@ -1,21 +1,62 @@
-# ReachDeploy
+# Reach Deploy
+## An Elixir package for deploying services to Reach Docker Swarm
 
-**TODO: Add description**
+This tool is intended to ease the deploy process of services wrote in Elixir to Docker Swarm clusters. It uses `mix docker` package to generate and publish the Docker image, and then uses the `deploy` script (available at https://github.com/reach-service/deployment-app) to deploy to cloud.
+
+> Warning: this package is currently in alpha stage. Bugs and misbehaves are expected. If you find anything weird, please, [open an issue](https://github.com/reach-service/reach_deploy/issues).
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `reach_deploy` to your list of dependencies in `mix.exs`:
+As a private package, we can't depend on it directly. We'll import directly from GitHub instead.
+
+To import from GitHub (using a machine that does have access to this repo), add this to your `mix.exs` file:
 
 ```elixir
 def deps do
-  [
-    {:reach_deploy, "~> 0.1.0"}
-  ]
+[
+  {:reach_deploy, git: "git@github.com:reach-service/reach_deploy.git", tag: "v0.1.0-alpha"}
+]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/reach_deploy](https://hexdocs.pm/reach_deploy).
+Then, do a `mix deps.get` and you're good to go.
 
+## Usage
+
+In order to use this package, you need to do some setup first. In your `config.exs` (or similar) file, do the following:
+
+```elixir
+config :reach_deploy,
+# First, configure a stack name to use in your Docker Swarm stack
+  stack_name: "deploy_test",
+# Now, configure each server separately. To only mandatory configuration is a `prod` server.
+  deploy_conf: %{
+    prod: %{
+    # User to use on `prod` server
+      user: "ubuntu",
+    # Hostname/ip of it
+      host: "10.0.0.1"
+    },
+    cd: %{
+      user: "ubuntu",
+      host: "10.0.0.2"
+    }
+  }
+
+# You'll need to explicity configure the `mix_docker` package with some info...
+config :mix_docker,
+# The image that'll be uploaded
+  image: "reach/reach_deploy",
+# Tag naming
+  tag: "{rel-version}-{git-sha}-{git-branch}"
+```
+
+After configuring the package, do a `mix reach.deploy` to deploy to `prod` server on default. To deploy to another server, pass its name to `--server` option, as follows:
+
+```elixir
+mix reach.deploy --server staging
+```
+
+... where `staging` is a existent entry on `:deploy_conf` config.
+
+Check for any errors (like missing certificates, etc). And then, you're good to go! :)

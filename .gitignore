@@ -18,3 +18,10 @@ erl_crash.dump
 
 # Also ignore archive artifacts (built via "mix archive.build").
 *.ez
+.dockerignore
+Dockerfile.build
+rel/
+docker-compose.yml
+docker-compose*.yml
+deploy.conf
+*.tar.gz

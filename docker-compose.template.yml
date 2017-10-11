@@ -1,0 +1,5 @@
+# Just an example file...
+version: "3.2"
+services:
+  deploy_test:
+    image: {image}
